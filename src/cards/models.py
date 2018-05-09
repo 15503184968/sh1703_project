@@ -38,14 +38,25 @@ class Card(models.Model):
             )
 
     def __str__(self):
-        return '{card_id} - {balance}'.format(
+        name = self.cardinfo.name if self.cardinfo else ''
+        return '{card_id} - {name}'.format(
                 card_id=self.id,
-                balance=self.balance,
+                name=name,
                 )
 
     def name(self):
         return self.cardinfo.name
     name.short_description = '姓名'
+
+    def to_json(self):
+        info = {
+            'id': self.id,
+            'balance': self.balance,
+            'balance_available': self.balance_available,
+            'balance_freeze': self.balance_freeze,
+            'status': self.status_id,
+        }
+        return info
 
 
 class CardInfo(models.Model):
@@ -62,6 +73,16 @@ class CardInfo(models.Model):
 
     def __str__(self):
         return self.name
+
+    def to_json(self):
+        info = {
+            'id': self.id,
+            'name': self.name,
+            'phone': self.phone,
+            'email': self.email,
+            'card': self.card_id,
+        }
+        return info
 
 
 class CardHistory(models.Model):
@@ -88,3 +109,12 @@ class CardHistory(models.Model):
                 operator=self.operator_type.name,
                 )
 
+    def to_json(self):
+        info = {
+            'id': self.id,
+            'time': self.time.isoformat(),
+            'card': self.card.id,
+            'operator_type': self.operator_type_id,
+            'remark': self.remark,
+        }
+        return info

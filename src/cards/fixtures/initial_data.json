@@ -1,0 +1,130 @@
+[
+    {
+        "model": "cards.cardstatus",
+        "pk": 1,
+        "fields": {
+            "name": "正常",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardstatus",
+        "pk": 2,
+        "fields": {
+            "name": "挂失",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardstatus",
+        "pk": 3,
+        "fields": {
+            "name": "冻结",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardstatus",
+        "pk": 4,
+        "fields": {
+            "name": "销户",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 1,
+        "fields": {
+            "name": "开户",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 2,
+        "fields": {
+            "name": "销户",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 3,
+        "fields": {
+            "name": "挂失",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 4,
+        "fields": {
+            "name": "补办",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 5,
+        "fields": {
+            "name": "冻结",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 6,
+        "fields": {
+            "name": "解冻",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 7,
+        "fields": {
+            "name": "存款",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 8,
+        "fields": {
+            "name": "取款",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 9,
+        "fields": {
+            "name": "转账",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 10,
+        "fields": {
+            "name": "修改账户信息",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 11,
+        "fields": {
+            "name": "冲正",
+            "remark": ""
+        }
+    },
+    {
+        "model": "cards.cardoperatetype",
+        "pk": 12,
+        "fields": {
+            "name": "清算",
+            "remark": ""
+        }
+    }
+]

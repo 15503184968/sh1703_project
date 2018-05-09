@@ -77,8 +77,26 @@ WSGI_APPLICATION = 'example.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        # SQLite3
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+
+        # PostgreSQL
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db01',
+        'USER': 'u01',
+        'PASSWORD': '000000',
+        'HOST': '127.0.0.1',
+        'POST': '5432',
+
+        # MySQL
+        # 'ENGINE': 'django.db.backends.mysql',
+        # 'NAME': 'db01',
+        # 'USER': 'u01',
+        # 'PASSWORD': '000000',
+        # 'HOST': '127.0.0.1',
+        # 'POST': '3306',
+
     }
 }
 
