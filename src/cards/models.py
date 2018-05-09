@@ -27,9 +27,9 @@ class CardOperateType(models.Model):
 class Card(models.Model):
     ''' 银行卡 '''
 
-    balance = models.IntegerField(verbose_name='余额')
-    balance_available = models.IntegerField(verbose_name='可用金额')
-    balance_freeze = models.IntegerField(verbose_name='冻结金额')
+    balance = models.IntegerField(verbose_name='余额', default=0)
+    balance_available = models.IntegerField(verbose_name='可用金额', default=0)
+    balance_freeze = models.IntegerField(verbose_name='冻结金额', default=0)
 
     status = models.ForeignKey(
             'CardStatus',
