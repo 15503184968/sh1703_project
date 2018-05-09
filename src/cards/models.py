@@ -14,8 +14,8 @@ class CardStatus(models.Model):
         return self.name
 
 
-class CardOperate(models.MOdel):
-    ''' 银行卡的操作 '''
+class CardOperateType(models.Model):
+    ''' 银行卡的操作类型 '''
 
     name = models.CharField(max_length=16, verbose_name='名称')
     remark = models.TextField(blank=True, verbose_name='备注')
@@ -71,16 +71,16 @@ class CardHistory(models.Model):
             on_delete=models.DO_NOTHING,
             verbose_name='银行卡',
             )
-    operator = models.ForeignKey(
-            'CardOperate',
+    operator_type = models.ForeignKey(
+            'CardOperateType',
             on_delete=models.DO_NOTHING,
-            verbose_name='操作',
+            verbose_name='操作类型',
             )
 
     def __str__(self):
         return '{time} - {card_id} - {operator}'.format(
                 time=self.time.isoformat(),
                 card_id=self.card.id,
-                operator=self.operator.name,
+                operator=self.operator_type.name,
                 )
 
