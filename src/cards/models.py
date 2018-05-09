@@ -43,6 +43,10 @@ class Card(models.Model):
                 balance=self.balance,
                 )
 
+    def name(self):
+        return self.cardinfo.name
+    name.short_description = '姓名'
+
 
 class CardInfo(models.Model):
     ''' 用户信息 '''
