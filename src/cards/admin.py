@@ -3,6 +3,10 @@ from django.contrib import admin
 from . import models
 
 
+class CardInfoInline(admin.TabularInline):
+    model = models.CardInfo
+
+
 class CardAdmin(admin.ModelAdmin):
     list_display = (
         'id',
@@ -12,6 +16,7 @@ class CardAdmin(admin.ModelAdmin):
         'balance_available',
         'balance_freeze',
     )
+    inlines = [CardInfoInline]
 
 
 admin.site.register(models.CardStatus)

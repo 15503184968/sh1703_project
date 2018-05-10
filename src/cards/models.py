@@ -48,6 +48,16 @@ class Card(models.Model):
     name.short_description = '姓名'
 
 
+    def to_json(self):
+        info = {
+            'id': self.id,
+            'balance': self.balance,
+            'balance_available': self.balance_available,
+            'balance_freeze': self.balance_freeze,
+            'status': self.status_id,
+        }
+        return info
+
 class CardInfo(models.Model):
     ''' 用户信息 '''
 
