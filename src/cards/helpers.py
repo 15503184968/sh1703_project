@@ -15,17 +15,17 @@ class NotAutoCommit:
     ''' 不使用django的自动提交 '''
 
     def __init__(self):
-        print('NotAutoCommit.__init__(): ...')
+        # print('NotAutoCommit.__init__(): ...')
         # 保存django自动事务的设置
         self.old_autocommit = transaction.get_autocommit()
 
     def __enter__(self):
-        print('NotAutoCommit.__enter__(): ...')
+        # print('NotAutoCommit.__enter__(): ...')
         # 关闭django自动事务
         transaction.set_autocommit(False)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print('NotAutoCommit.__exit__(): ...')
+        # print('NotAutoCommit.__exit__(): ...')
         # 恢复django自动事务的设置
         transaction.set_autocommit(self.old_autocommit)
 
@@ -48,10 +48,10 @@ def put_money(card, money):
     s_operator_type = '存款'
 
     with NotAutoCommit():
-        print('django自动事务: {}'.format(transaction.get_autocommit()))
+        # print('django自动事务: {}'.format(transaction.get_autocommit()))
         try:
-            print('休眠30秒 ... {}'.format(datetime.datetime.now().isoformat()))
-            time.sleep(30)
+            # print('休眠30秒 ... {}'.format(datetime.datetime.now().isoformat()))
+            # time.sleep(30)
             if card.status.name == s_status:
                 try:
                     operator_type = CardOperateType.objects.get(name=s_operator_type)
@@ -89,10 +89,10 @@ def put_money(card, money):
                 )
                 obj.save()
 
-                print('数据提交之前 ... {}'.format(datetime.datetime.now().isoformat()))
+                # print('数据提交之前 ... {}'.format(datetime.datetime.now().isoformat()))
                 # 数据提交
                 transaction.commit()
-                print('数据提交之后 ... {}'.format(datetime.datetime.now().isoformat()))
+                # print('数据提交之后 ... {}'.format(datetime.datetime.now().isoformat()))
             else:
                 msg = '银行卡的状态错误. status: {}'.format(card.status.name)
                 raise ValueError(msg)
@@ -100,9 +100,9 @@ def put_money(card, money):
             # 数据回滚
             msg = '未知错误. e: {}'.format(e)
             transaction.rollback()
-            print('数据回滚 ... {}'.format(datetime.datetime.now().isoformat()))
+            # print('数据回滚 ... {}'.format(datetime.datetime.now().isoformat()))
             raise ValueError(msg)
-    print('\t函数返回前，django自动事务: {}'.format(transaction.get_autocommit()))
+    # print('\t函数返回前，django自动事务: {}'.format(transaction.get_autocommit()))
 
 
 
@@ -188,7 +188,6 @@ def get_money(card, money):
     :type money: int
     :return: None or Exception
     '''
-    pass
     s_status = '正常'
     s_operator_type = '取款'
 
@@ -279,10 +278,129 @@ def get_CardOperateType(s_operator_type):
     :type s_operator_type: str
     :return: CardOperateType or ValueError
     '''
+    print('get_CardOperateType(): ...\n\ts_operator_type: {}'.format(s_operator_type))
     try:
         operator_type = CardOperateType.objects.get(name=s_operator_type)
     except CardOperateType.DoesNotExist:
         msg = '操作类型不存在. operator_type: {}'.format(s_operator_type)
         raise ValueError(msg)
+    print('operator_type: {}'.format(operator_type))
     return operator_type
+
+
+def credit_transfer_v1(card_from, card_to, money):
+    ''' 转账
+
+    :param card_from: 转出银行卡
+    :type card_from: Card
+    :param card_to: 转入银行卡
+    :type card_to: Card
+    :param money: 发生金额
+    :type money: int
+    :return: None or ValueError
+    '''
+    pass
+
+    get_money(card_from, money)
+    put_money(card_to, money)
+
+
+
+def credit_transfer_v2(card_from, card_to, money):
+    ''' 转账
+
+    :param card_from: 转出银行卡
+    :type card_from: Card
+    :param card_to: 转入银行卡
+    :type card_to: Card
+    :param money: 发生金额
+    :type money: int
+    :return: None or ValueError
+    '''
+    pass
+
+    s_status = '正常'
+    s_operator_type = '转账'
+
+    # 检查银行卡状态
+    check_CardStatus(card_from, s_status)
+
+    # 检查余额
+    if card_from.balance < money:
+        msg = '余额不足'
+        raise ValueError(msg)
+    elif card_from.balance_available < money:
+        msg = '可用余额不足'
+        raise ValueError(msg)
+
+    # 取银行卡的操作类型
+    operator_type = get_CardOperateType(s_operator_type)
+
+    ''' 取款 '''
+    # 业务发生前的数据
+    data_old = card_from.to_json()
+    # 取款
+    card_from.balance -= money
+    card_from.balance_available -= money
+    card_from.save()
+    # 业务发生后的数据
+    data_new = card_from.to_json()
+
+    # 写流水帐
+    remark = '''
+    时间：{now},
+    业务类型：{operator_type}--转出,
+    发生金额：{money},
+    业务发生前的数据：{data_old},
+    业务发生后的数据：{data_new},
+    收款银行卡：{card_to},
+    '''.format(
+        now=datetime.datetime.now().isoformat(),
+        operator_type=s_operator_type,
+        money=money,
+        data_old=data_old,
+        data_new=data_new,
+        card_to=card_to.id,
+    )
+    obj = CardHistory(
+        card=card_from,
+        operator_type=operator_type,
+        remark=remark,
+    )
+    obj.save()
+
+    ''' 存款 '''
+    # 业务发生前的数据
+    data_old = card_to.to_json()
+    # 存钱
+    card_to.balance += money
+    card_to.balance_available += money
+    card_to.save()
+    # 业务发生后的数据
+    data_new = card_to.to_json()
+    # 写流水帐
+    remark = '''
+    时间：{now},
+    业务类型：{operator_type}--转入,
+    发生金额：{money},
+    业务发生前的数据：{data_old},
+    业务发生后的数据：{data_new},
+    付款银行卡：{card_from},
+    '''.format(
+        now=datetime.datetime.now().isoformat(),
+        operator_type=s_operator_type,
+        money=money,
+        data_old=data_old,
+        data_new=data_new,
+        card_from=card_from.id,
+    )
+
+    # raise ValueError('调试')
+
+    obj = CardHistory(
+        card=card_to,
+        operator_type=operator_type,
+        remark=remark,
+    )
+    obj.save()
 
