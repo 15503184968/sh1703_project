@@ -92,7 +92,7 @@ def put_money(card, money):
             # 数据回滚
             msg = '未知错误. e: {}'.format(e)
             transaction.rollback()
-            print(msg)
+            raise ValueError(msg)
 
 
 
@@ -162,7 +162,7 @@ def put_money_2(card, money):
         # 数据回滚
         msg = '未知错误. e: {}'.format(e)
         transaction.rollback()
-        print(msg)
+        raise ValueError(msg)
     finally:
         # 恢复django自动事务的设置
         transaction.set_autocommit(old_autocommit)
