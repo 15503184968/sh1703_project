@@ -73,6 +73,16 @@ class CardInfo(models.Model):
     def __str__(self):
         return self.name
 
+    def to_json(self):
+        info = {
+                'id': self.id,
+                'name': self.name,
+                'phone': self.phone,
+                'email': self.email,
+                'card_id': self.card_id,
+                }
+        return info
+
 
 class CardHistory(models.Model):
     ''' 银行卡的流水帐 '''

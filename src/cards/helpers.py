@@ -8,7 +8,7 @@ import time
 from django.db import transaction
 
 # our apps
-from .models import Card, CardHistory, CardOperateType, CardStatus
+from .models import Card, CardHistory, CardOperateType, CardStatus, CardInfo
 
 
 class NotAutoCommit:
@@ -529,3 +529,104 @@ def credit_transfer_v3(card_from, card_to, money):
             msg = '未知错误. e: {}'.format(e)
             transaction.rollback()
             raise ValueError(msg)
+
+
+def open_account(name, phone, email):
+    ''' 开户
+
+    :param name: 姓名
+    :type name: str
+    :param phone: 电话
+    :type phone: str
+    :param email: 电子信箱
+    :type email: str
+    :return: Card
+    '''
+    pass
+    s_operator_type = '开户'
+    s_status = '正常'
+
+    try:
+        status = CardStatus.objects.get(name=s_status)
+    except CardStatus.DoesNotExist:
+        msg = '状态不存在. status: {}'.format(s_status)
+        raise ValueError(msg)
+
+    try:
+        operator_type = CardOperateType.objects.get(name=s_operator_type)
+    except CardOperateType.DoesNotExist:
+        msg = '操作类型不存在. operator_type: {}'.format(s_operator_type)
+        raise ValueError(msg)
+
+
+    ''' 开银行卡 '''
+    # 业务发生前的数据
+    data_old = None
+    # 开银行卡
+    card = Card(status=status)
+    card.save()
+    # 业务发生后的数据
+    data_new = card.to_json()
+    # 写流水帐
+    remark = '''
+    时间：{now},
+    业务类型：{operator_type},
+    发生金额：{money},
+    业务发生前的数据：{data_old},
+    业务发生后的数据：{data_new},
+    '''.format(
+        now=datetime.datetime.now().isoformat(),
+        operator_type=s_operator_type,
+        money=0,
+        data_old=data_old,
+        data_new=data_new,
+    )
+
+    # raise ValueError('调试')
+
+    obj = CardHistory(
+        card=card,
+        operator_type=operator_type,
+        remark=remark,
+    )
+    obj.save()
+
+
+    ''' 开用户信息 '''
+    # 业务发生前的数据
+    data_old = None
+    # 开用户信息
+    card_info = CardInfo(
+            name=name,
+            phone=phone,
+            email=email,
+            card=card,
+            )
+    card_info.save()
+    # 业务发生后的数据
+    data_new = card_info.to_json()
+    # 写流水帐
+    remark = '''
+    时间：{now},
+    业务类型：{operator_type},
+    发生金额：{money},
+    业务发生前的数据：{data_old},
+    业务发生后的数据：{data_new},
+    '''.format(
+        now=datetime.datetime.now().isoformat(),
+        operator_type=s_operator_type,
+        money=0,
+        data_old=data_old,
+        data_new=data_new,
+    )
+
+    obj = CardHistory(
+        card=card,
+        operator_type=operator_type,
+        remark=remark,
+    )
+    obj.save()
+
+
+    return card
+
