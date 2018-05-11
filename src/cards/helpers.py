@@ -30,7 +30,6 @@ class NotAutoCommit:
         transaction.set_autocommit(self.old_autocommit)
 
 
-
 def put_money(card, money):
     ''' 存款
 
@@ -103,7 +102,6 @@ def put_money(card, money):
             # print('数据回滚 ... {}'.format(datetime.datetime.now().isoformat()))
             raise ValueError(msg)
     # print('\t函数返回前，django自动事务: {}'.format(transaction.get_autocommit()))
-
 
 
 def put_money_2(card, money):
@@ -305,7 +303,6 @@ def credit_transfer_v1(card_from, card_to, money):
     put_money(card_to, money)
 
 
-
 def credit_transfer_v2(card_from, card_to, money):
     ''' 转账
 
@@ -324,6 +321,7 @@ def credit_transfer_v2(card_from, card_to, money):
 
     # 检查银行卡状态
     check_CardStatus(card_from, s_status)
+    check_CardStatus(card_to, s_status)
 
     # 检查余额
     if card_from.balance < money:
@@ -404,3 +402,130 @@ def credit_transfer_v2(card_from, card_to, money):
     )
     obj.save()
 
+
+def credit_transfer_v3_1(
+        card_from, card_to, money, s_status, s_operator_type,
+        ):
+    ''' 转账的主题
+
+    :param card_from: 转出银行卡
+    :type card_from: Card
+    :param card_to: 转入银行卡
+    :type card_to: Card
+    :param money: 发生金额
+    :type money: int
+    :param s_status: 银行卡状态
+    :type s_status: str
+    :param s_operator_type: 银行卡操作的类型
+    :type s_operator_type: str
+    :return: None or ValueError
+    '''
+
+    # 检查银行卡状态
+    check_CardStatus(card_from, s_status)
+    check_CardStatus(card_to, s_status)
+
+    # 检查余额
+    if card_from.balance < money:
+        msg = '余额不足'
+        raise ValueError(msg)
+    elif card_from.balance_available < money:
+        msg = '可用余额不足'
+        raise ValueError(msg)
+
+    # 取银行卡的操作类型
+    operator_type = get_CardOperateType(s_operator_type)
+
+    ''' 取款 '''
+    # 业务发生前的数据
+    data_old = card_from.to_json()
+    # 取款
+    card_from.balance -= money
+    card_from.balance_available -= money
+    card_from.save()
+    # 业务发生后的数据
+    data_new = card_from.to_json()
+
+    # 写流水帐
+    remark = '''
+            时间：{now},
+            业务类型：{operator_type}--转出,
+            发生金额：{money},
+            业务发生前的数据：{data_old},
+            业务发生后的数据：{data_new},
+            收款银行卡：{card_to},
+            '''.format(
+                    now=datetime.datetime.now().isoformat(),
+                    operator_type=s_operator_type,
+                    money=money,
+                    data_old=data_old,
+                    data_new=data_new,
+                    card_to=card_to.id,
+                    )
+    obj = CardHistory(
+        card=card_from,
+        operator_type=operator_type,
+        remark=remark,
+    )
+    obj.save()
+
+    raise ValueError('调试')
+
+    ''' 存款 '''
+    # 业务发生前的数据
+    data_old = card_to.to_json()
+    # 存钱
+    card_to.balance += money
+    card_to.balance_available += money
+    card_to.save()
+    # 业务发生后的数据
+    data_new = card_to.to_json()
+    # 写流水帐
+    remark = '''
+            时间：{now},
+            业务类型：{operator_type}--转入,
+            发生金额：{money},
+            业务发生前的数据：{data_old},
+            业务发生后的数据：{data_new},
+            付款银行卡：{card_from},
+            '''.format(
+                    now=datetime.datetime.now().isoformat(),
+                    operator_type=s_operator_type,
+                    money=money,
+                    data_old=data_old,
+                    data_new=data_new,
+                    card_from=card_from.id,
+                    )
+
+    obj = CardHistory(
+        card=card_to,
+        operator_type=operator_type,
+        remark=remark,
+    )
+    obj.save()
+
+
+def credit_transfer_v3(card_from, card_to, money):
+    ''' 转账
+
+    :param card_from: 转出银行卡
+    :type card_from: Card
+    :param card_to: 转入银行卡
+    :type card_to: Card
+    :param money: 发生金额
+    :type money: int
+    :return: None or ValueError
+    '''
+    s_status = '正常'
+    s_operator_type = '转账'
+
+    with NotAutoCommit():
+        try:
+            credit_transfer_v3_1(
+                    card_from, card_to, money, s_status, s_operator_type,
+                    )
+        except Exception as e:
+            # 数据回滚
+            msg = '未知错误. e: {}'.format(e)
+            transaction.rollback()
+            raise ValueError(msg)
