@@ -177,6 +177,75 @@ def put_money_2(card, money):
         print('恢复django自动设置的设置')
 
 
+def put_money_v3_1(card, money):
+    ''' 存款
+
+    :param card: 银行卡
+    :type card: Card
+    :param money: 发生金额
+    :type money: int
+    :return: None or Exception
+    '''
+    s_status = '正常'
+    s_operator_type = '存款'
+
+    if card.status.name == s_status:
+        try:
+            operator_type = CardOperateType.objects.get(name=s_operator_type)
+        except CardOperateType.DoesNotExist:
+            msg = '操作类型不存在. operator_type: {}'.format(s_operator_type)
+            raise ValueError(msg)
+
+        # 业务发生前的数据
+        data_old = card.to_json()
+        # 存钱
+        card.balance += money
+        card.balance_available += money
+        card.save()
+        # 业务发生后的数据
+        data_new = card.to_json()
+        # 写流水帐
+        remark = '''
+        时间：{now},
+        发生金额：{money},
+        业务发生前的数据：{data_old},
+        业务发生后的数据：{data_new},
+        '''.format(
+            now=datetime.datetime.now().isoformat(),
+            money=money,
+            data_old=data_old,
+            data_new=data_new,
+        )
+
+        # raise ValueError('调试')
+
+        obj = CardHistory(
+            card=card,
+            operator_type=operator_type,
+            remark=remark,
+        )
+        obj.save()
+
+        # print('数据提交之后 ... {}'.format(datetime.datetime.now().isoformat()))
+    else:
+        msg = '银行卡的状态错误. status: {}'.format(card.status.name)
+        raise ValueError(msg)
+ 
+
+def put_money_v3(card, money):
+    ''' 存款
+    使用django推荐的transaction.atomic().
+
+    :param card: 银行卡
+    :type card: Card
+    :param money: 发生金额
+    :type money: int
+    :return: None or Exception
+    '''
+    with transaction.atomic():
+        put_money_v3_1(card, money)
+
+
 def get_money(card, money):
     ''' 取款
 
@@ -245,6 +314,78 @@ def get_money(card, money):
             raise ValueError(msg)
 
 
+def get_money_v2_1(card, money):
+    ''' 取款
+
+    :param card: 银行卡
+    :type card: Card
+    :param money: 发生金额
+    :type money: int
+    :return: None or Exception
+    '''
+    s_status = '正常'
+    s_operator_type = '取款'
+
+    # 检查银行卡状态
+    check_CardStatus(card, s_status)
+
+    # 检查余额
+    if card.balance < money:
+        msg = '余额不足'
+        raise ValueError(msg)
+    elif card.balance_available < money:
+        msg = '可用余额不足'
+        raise ValueError(msg)
+
+    # 取银行卡的操作类型
+    operator_type = get_CardOperateType(s_operator_type)
+
+    # 业务发生前的数据
+    data_old = card.to_json()
+    # 取款
+    card.balance -= money
+    card.balance_available -= money
+    card.save()
+    # 业务发生后的数据
+    data_new = card.to_json()
+
+    # 写流水帐
+    remark = '''
+    时间：{now},
+    发生金额：{money},
+    业务发生前的数据：{data_old},
+    业务发生后的数据：{data_new},
+    '''.format(
+        now=datetime.datetime.now().isoformat(),
+        money=money,
+        data_old=data_old,
+        data_new=data_new,
+    )
+
+    # raise ValueError('调试')
+
+    obj = CardHistory(
+        card=card,
+        operator_type=operator_type,
+        remark=remark,
+    )
+    obj.save()
+
+
+def get_money_v2(card, money):
+    ''' 取款
+    使用django推荐的transaction.atomic().
+
+    :param card: 银行卡
+    :type card: Card
+    :param money: 发生金额
+    :type money: int
+    :return: None or Exception
+    '''
+    with transaction.atomic():
+        get_money_v2_1(card, money)
+
+
 def check_CardStatus(card, status):
     ''' 检查银行卡的状态
 
@@ -276,13 +417,13 @@ def get_CardOperateType(s_operator_type):
     :type s_operator_type: str
     :return: CardOperateType or ValueError
     '''
-    print('get_CardOperateType(): ...\n\ts_operator_type: {}'.format(s_operator_type))
+    # print('get_CardOperateType(): ...\n\ts_operator_type: {}'.format(s_operator_type))
     try:
         operator_type = CardOperateType.objects.get(name=s_operator_type)
     except CardOperateType.DoesNotExist:
         msg = '操作类型不存在. operator_type: {}'.format(s_operator_type)
         raise ValueError(msg)
-    print('operator_type: {}'.format(operator_type))
+    # print('operator_type: {}'.format(operator_type))
     return operator_type
 
 
@@ -314,8 +455,6 @@ def credit_transfer_v2(card_from, card_to, money):
     :type money: int
     :return: None or ValueError
     '''
-    pass
-
     s_status = '正常'
     s_operator_type = '转账'
 
@@ -531,6 +670,20 @@ def credit_transfer_v3(card_from, card_to, money):
             raise ValueError(msg)
 
 
+def credit_transfer_v4(card_from, card_to, money):
+    ''' 转账
+
+    :param card_from: 转出银行卡
+    :type card_from: Card
+    :param card_to: 转入银行卡
+    :type card_to: Card
+    :param money: 发生金额
+    :type money: int
+    :return: None or ValueError
+    '''
+    with transaction.atomic():
+        credit_transfer_v2(card_from, card_to, money)
+
 def open_account_v1(name, phone, email):
     ''' 开户
 
@@ -722,7 +875,6 @@ def open_account_v2_1(name, phone, email, s_status, s_operator_type):
     obj.save()
 
     return card
-
 
 
 def open_account_v2(name, phone, email):
