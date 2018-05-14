@@ -55,6 +55,8 @@ class Card(models.Model):
             'balance_available': self.balance_available,
             'balance_freeze': self.balance_freeze,
             'status': self.status_id,
+            'status_zh': self.status.name,
+            'card_info': self.cardinfo.to_json(),
         }
         return info
 
