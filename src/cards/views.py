@@ -85,6 +85,7 @@ class CardView(View):
         pass
         print('CardView.post(): ...')
         msg_error = None
+        print('request.POST: {}'.format(request.POST))
         form = PutMoneyForm(request.POST)
         if form.is_valid():
             pass
@@ -105,7 +106,7 @@ class CardView(View):
             if msg_error:
                 return HttpResponse(msg_error)
 
-            url = '/cards?card_id={}'.format(card_id)
+            url = '/hello/cards_view/?card_id={}'.format(card_id)
         else:
-            url = '/cards'
+            url = '/hello/cards_class_list'
         return redirect(url)
