@@ -532,14 +532,14 @@ def credit_transfer_v2(card_from, card_to, money):
         card_from=card_from.id,
     )
 
-    # raise ValueError('调试')
-
     obj = CardHistory(
         card=card_to,
         operator_type=operator_type,
         remark=remark,
     )
     obj.save()
+
+    # raise ValueError('调试')
 
 
 def credit_transfer_v3_1(

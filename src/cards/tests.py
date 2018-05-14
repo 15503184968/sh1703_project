@@ -14,7 +14,12 @@ class PutMoneyTestCase(TestCase):
 
     def setUp(self):
         ''' 初始化测试环境 '''
-        # print('PutMoneyTestCase.setUp(): ...')
+        print('PutMoneyTestCase.setUp(): ...')
+        self.setUp_v2()
+
+    def setUp_v2(self):
+        ''' 初始化测试环境 '''
+        print('PutMoneyTestCase.setUp_v2(): ...')
 
         models.Card.objects.get_or_create(id=1, status_id=1)
         models.Card.objects.get_or_create(id=2, status_id=1)
@@ -23,7 +28,7 @@ class PutMoneyTestCase(TestCase):
 
     def setUp_v1(self):
         ''' 初始化测试环境 '''
-        # print('PutMoneyTestCase.setUp_v1(): ...')
+        print('PutMoneyTestCase.setUp_v1(): ...')
         pass
 
         arr = [
@@ -40,12 +45,12 @@ class PutMoneyTestCase(TestCase):
 
     def tearDown(self):
         ''' 释放测试环境 '''
-        # print('PutMoneyTestCase.tearDown(): ...')
+        print('PutMoneyTestCase.tearDown(): ...')
         pass
 
     def test_put_money_v3(self):
         ''' 存款 '''
-        # print('PutMoneyTestCase.test_put_money_v3(): ...')
+        print('PutMoneyTestCase.test_put_money_v3(): ...')
 
         o_id = 1
         money = 100
@@ -65,7 +70,7 @@ class PutMoneyTestCase(TestCase):
 
     def test_get_money_v2(self):
         ''' 取款 '''
-        # print('PutMoneyTestCase.test_get_money_v2(): ...')
+        print('PutMoneyTestCase.test_get_money_v2(): ...')
 
         o_id = 1
         money = 100
@@ -85,6 +90,8 @@ class PutMoneyTestCase(TestCase):
 
     def test_credit_transfer_v4(self):
         ''' 转账 '''
+        print('PutMoneyTestCase.test_credit_transfer_v4(): ...')
+
         o_id_from = 1
         o_id_to = 2
         money = 100
