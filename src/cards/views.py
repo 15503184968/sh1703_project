@@ -15,6 +15,7 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 from .models import Card
@@ -176,12 +177,20 @@ class CardViewSet(viewsets.ModelViewSet):
     serializer_class = CardSerializer
 
 
-@api_view(['POST'])
+@csrf_exempt
+@api_view(['GET', 'POST'])
 def put_money_restful(request):
     ''' 存钱，使用rest framework '''
     print('put_money_restful(): ...')
     print('request.data: {}'.format(request.data))
+
+    # pdb.set_trace()
+
     msg_error = None
+
+    if request.method == 'GET':
+        msg = '必须是POST方法'
+        return HttpResponse(msg, content_type='text/json')
 
     serializer = PutMoneySerializer(data=request.data)
     print('serializer: {}'.format(serializer))
@@ -210,6 +219,7 @@ def put_money_restful(request):
         # msg = json.dumps(obj.to_json(), ensure_ascii=False, indent=4)
         # return HttpResponse(msg)
         s_obj = CardSerializer(obj)
+
         return Response(s_obj.data)
 
 
