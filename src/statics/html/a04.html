@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="/static/js/brython.js"></script>
+    <script src="/static/js/brython_stdlib.js"></script>
+</head>
+<body onload="brython()">
+    <div id="result"></div>
+
+    <script type="text/python">
+import json
+from browser import document, ajax
+
+def on_complete(req):
+   if req.status==200 or req.status==0:
+       document["result"].html = req.text
+   else:
+       document["result"].html = "error "+req.text
+
+url = 'http://127.0.0.1:8000/hello/put_money_restful/'
+req = ajax.ajax()
+req.bind('complete',on_complete)
+
+# send a POST request to the url
+req.open('POST', url, True)
+
+# req.set_header('content-type','application/x-www-form-urlencoded')
+req.set_header('content-type','application/json')
+
+# send data as a dictionary
+info = {
+    'card_id': 1,
+    'money': 100,
+}
+msg = json.dumps(info)
+req.send(msg)
+    </script>
+</body>
+</html>
