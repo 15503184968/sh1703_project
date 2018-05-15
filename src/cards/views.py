@@ -2,12 +2,14 @@
 
 # python apps
 import json
+import pdb
 
 # django apps
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic import ListView
 from django.views import View
+from django.urls import reverse
 
 # Create your views here.
 from .models import Card
@@ -62,7 +64,23 @@ class CardView(View):
     pass
 
     def get(self, request, *args, **kwargs):
+        ''' 获取Card的记录
+            返回单条记录，或者多条记录
+            返回html，或者json格式。
+
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        '''
+        print('CardView.get(): ...')
+        print('request.GET: {}'.format(request.GET))
+
         info = None
+        format_json = request.GET.get('json', None)
+
+        print('format_json: {}'.format(format_json))
+
         card_id = request.GET.get('card_id', None)
         if card_id:
             # 访问Card单条记录
@@ -78,12 +96,31 @@ class CardView(View):
                     for obj in qs
                 ]
             }
-        msg = json.dumps(info, ensure_ascii=False, indent=4)
-        return HttpResponse(msg, content_type='text/json')
+        if format_json is None:
+            # 返回html格式
+            if card_id:
+                # 单条记录
+                tpl = 'cards/card_detail.html'
+                info = {
+                    'obj': info,
+                }
+            else:
+                # 多条记录
+                tpl = 'cards/card_list.html'
+                info['object_list'] = info['data']
+            return render(request, tpl, info)
+        else:
+            # 返回json格式
+            msg = json.dumps(info, ensure_ascii=False, indent=4)
+            content_type = 'text/json'
+            return HttpResponse(msg, content_type=content_type)
 
     def post(self, request, *args, **kwargs):
         pass
+
         print('CardView.post(): ...')
+        # pdb.set_trace()
+
         msg_error = None
         print('request.POST: {}'.format(request.POST))
         form = PutMoneyForm(request.POST)
@@ -106,7 +143,16 @@ class CardView(View):
             if msg_error:
                 return HttpResponse(msg_error)
 
-            url = '/hello/cards_view/?card_id={}'.format(card_id)
+            # obj = Card.objects.get(pk=card_id)
+            # msg = json.dumps(obj.to_json(), ensure_ascii=False, indent=4)
+            # return HttpResponse(msg)
+
+            # url = '/hello/cards_view/?card_id={}'.format(card_id)
+            url = '{}?card_id={}'.format(
+                    reverse('card_view'),
+                    card_id,
+                    )
         else:
-            url = '/hello/cards_class_list'
+            # url = '/hello/cards_class_list'
+            url = reverse('card_view')
         return redirect(url)
