@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.views.generic import ListView
 from django.views import View
 from django.urls import reverse
+from django.core.paginator import Paginator
 
 # Create your views here.
 from .models import Card
@@ -86,27 +87,33 @@ class CardView(View):
             # 访问Card单条记录
             card = Card.objects.get(pk=card_id)
             info = card.to_json()
+            print('info: {}'.format(info))
         else:
             # 访问Card列表
             qs = Card.objects.all()
+
+            # 分页
+            page = request.GET.get('page')
+            paginator = Paginator(qs, 2)
+            contacts = paginator.get_page(page)
             info = {
                 'count': qs.count(),
                 'data': [
                     obj.to_json()
-                    for obj in qs
-                ]
+                    for obj in contacts
+                ],
             }
+
         if format_json is None:
             # 返回html格式
             if card_id:
                 # 单条记录
                 tpl = 'cards/card_detail.html'
-                info = {
-                    'obj': info,
-                }
+                info = {'obj': info}
             else:
                 # 多条记录
                 tpl = 'cards/card_list.html'
+                info['contacts'] = contacts
                 info['object_list'] = info['data']
             return render(request, tpl, info)
         else:
