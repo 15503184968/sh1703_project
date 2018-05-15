@@ -11,11 +11,13 @@ from django.views.generic import ListView
 from django.views import View
 from django.urls import reverse
 from django.core.paginator import Paginator
+from rest_framework import viewsets
 
 # Create your views here.
 from .models import Card
 from .helpers import put_money_v3
 from .forms import PutMoneyForm
+from .serializers import CardSerializer
 
 
 def hello(request):
@@ -163,3 +165,11 @@ class CardView(View):
             # url = '/hello/cards_class_list'
             url = reverse('card_view')
         return redirect(url)
+
+
+
+class CardViewSet(viewsets.ModelViewSet):
+    queryset = Card.objects.all()
+    serializer_class = CardSerializer
+
+
