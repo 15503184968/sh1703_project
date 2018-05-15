@@ -12,12 +12,15 @@ from django.views import View
 from django.urls import reverse
 from django.core.paginator import Paginator
 from rest_framework import viewsets
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 # Create your views here.
 from .models import Card
 from .helpers import put_money_v3
 from .forms import PutMoneyForm
-from .serializers import CardSerializer
+from .serializers import CardSerializer, PutMoneySerializer
 
 
 def hello(request):
@@ -172,4 +175,43 @@ class CardViewSet(viewsets.ModelViewSet):
     queryset = Card.objects.all()
     serializer_class = CardSerializer
 
+
+@api_view(['POST'])
+def put_money_restful(request):
+    ''' 存钱，使用rest framework '''
+    print('put_money_restful(): ...')
+    print('request.data: {}'.format(request.data))
+    msg_error = None
+
+    serializer = PutMoneySerializer(data=request.data)
+    print('serializer: {}'.format(serializer))
+
+    if serializer.is_valid():
+        print('ok!')
+        pass
+        card_id = serializer.validated_data['card_id']
+        money = serializer.validated_data['money']
+
+        try:
+            # 数据转换
+            card = Card.objects.get(pk=card_id)
+
+            put_money_v3(card, money)
+        except ValueError as e:
+            msg_error = str(e)
+        except Exception as e:
+            msg_error = '未知错误. e: {}'.format(e)
+            print(msg_error)
+
+        if msg_error:
+            return HttpResponse(msg_error)
+
+        obj = Card.objects.get(pk=card_id)
+        # msg = json.dumps(obj.to_json(), ensure_ascii=False, indent=4)
+        # return HttpResponse(msg)
+        s_obj = CardSerializer(obj)
+        return Response(s_obj.data)
+
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

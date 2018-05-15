@@ -21,6 +21,7 @@ urlpatterns = [
 
     # 存钱
     path('put_money/', views.put_money_view),
+    path('put_money_restful/', views.put_money_restful),
 
 
     # rest framework
