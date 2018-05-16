@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'cards',
+    'demo_celery',
 ]
 
 MIDDLEWARE = [
@@ -147,8 +148,10 @@ if DEBUG:
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'statics'),
     ]
+STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, '../statics_root'))
 
 
+# django rest framework
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
@@ -161,3 +164,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ),
 }
+
+
+# celery
+CELERY_BROKER_URL = 'pyamqp://guest@localhost//'

@@ -26,4 +26,7 @@ urlpatterns = [
 
     # rest framework
     path('cards/', include(router.urls)),
+
+    # 启动celery demo
+    path('celery_test/', views.celery_test),
 ]

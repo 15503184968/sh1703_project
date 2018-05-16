@@ -20,8 +20,10 @@ from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 from .models import Card
 from .helpers import put_money_v3
-from .forms import PutMoneyForm
+from .forms import PutMoneyForm, CeleryTestForm
 from .serializers import CardSerializer, PutMoneySerializer
+from demo_celery.helpers import todo_create
+from demo_celery.tasks import calc_01
 
 
 def hello(request):
@@ -224,4 +226,34 @@ def put_money_restful(request):
 
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def celery_test(request):
+    ''' 测试celery
+
+    :param request:
+    :return:
+    '''
+
+    if request.method == 'POST':
+        form = CeleryTestForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            remark = form.cleaned_data['remark']
+
+            # 创建记录
+            obj = todo_create(title, remark)
+            info = obj.to_json()
+
+            # 消息生产者
+            calc_01.delay(obj.id)
+
+            msg = json.dumps(info, ensure_ascii=False, indent=4)
+            content_type = 'text/json'
+            return HttpResponse(msg, content_type=content_type)
+    else:
+        form = CeleryTestForm()
+    tpl = 'cards/celery_test.html'
+    info = {'form': form}
+    return render(request, tpl, info)
 
