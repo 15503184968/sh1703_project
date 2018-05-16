@@ -16,3 +16,6 @@ def calc_01(todo_id):
     except ValueError as e:
         msg = str(e)
         print(msg)
+    except Exception as e:
+        msg = str(e)
+        print(msg)

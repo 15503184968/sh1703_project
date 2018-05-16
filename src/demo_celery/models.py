@@ -33,3 +33,22 @@ class Todo(models.Model):
             'remark': self.remark,
         }
         return info
+
+
+
+class TodoSpider(models.Model):
+    ''' 网站下载 '''
+
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True)
+
+    url = models.URLField()
+    filename = models.FileField()
+    status = models.IntegerField(
+        choices=STATUS_TODO, verbose_name='状态', default=0,
+    )
+
+# 首页
+#             运行中
+# 首页上的链接20个
+#             等待中
+
