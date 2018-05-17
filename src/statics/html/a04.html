@@ -19,7 +19,7 @@ def on_complete(req):
    else:
        document["result"].html = "error "+req.text
 
-url = 'http://127.0.0.1:8000/hello/put_money_restful/'
+url = 'http://127.0.0.1/hello/put_money_restful/'
 req = ajax.ajax()
 req.bind('complete',on_complete)
 
